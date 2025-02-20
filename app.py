@@ -32,7 +32,7 @@ def setup_logging():
         app.logger.addHandler(logging.StreamHandler())
 
 setup_logging()
-genai.configure(api_key="YOUR_API_KEY_HERE")
+genai.configure(api_key="AIzaSyD2ArK74wBtL1ufYmpyrV2LqaOBrSi3mlU")
 
 @dataclass
 class DepositSession:
