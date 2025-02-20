@@ -261,7 +261,7 @@ def process_account():
         if user_input_lower in ["exit", "quit", "cancel", "stop"]:
             session.pop('fd', None)
             return jsonify({
-                'message': f'{account_type} account opening cancelled. Thank you for considering our services!',
+                'next_prompt': f'{account_type} account opening cancelled. Thank you for considering our services!',
                 'fd_info': fd_data['fd_info']
             })
 
@@ -299,7 +299,7 @@ def process_account():
             else:
                 session.pop('fd', None)
                 return jsonify({
-                    'message': f'{account_type} account opening initiated successfully! You will receive confirmation details shortly.',
+                    'next_prompt': f'{account_type} account opening initiated successfully! You will receive confirmation details shortly.',
                     'fd_details': fd_data['fd_info']
                 })
 
