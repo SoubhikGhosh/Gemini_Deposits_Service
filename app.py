@@ -159,7 +159,7 @@ def format_confirmation(fd_info):
     
     return confirmation
 
-@app.route('/api/fd/start', methods=['POST'])
+@app.route('/api/start', methods=['POST'])
 def start_fd():
     try:
         session_id = str(uuid.uuid4())
@@ -211,7 +211,7 @@ Remember: Higher tenures typically offer better interest rates."""
         app.logger.error(f"Error starting FD session: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@app.route('/api/fd/process', methods=['POST'])
+@app.route('/api/process', methods=['POST'])
 def process_fd():
     try:
         data = request.get_json()
@@ -328,7 +328,7 @@ def process_fd():
         app.logger.error(f"Error processing FD request: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@app.route('/api/fd/complete', methods=['POST'])
+@app.route('/api/complete', methods=['POST'])
 def complete_fd():
     try:
         data = request.get_json()
