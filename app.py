@@ -72,7 +72,7 @@ def get_fd_details(model, prompt, conversation_history):
 
     IMPORTANT EXTRACTION RULES:
     1. For amount:
-       - Look for numbers preceded by Rs, ₹, rupees, or just numbers in context of money
+       - Look for numbers preceded or succeeded by Rs, ₹, rupees, or just numbers in context of money
        - Extract only the numeric value
        - Example: "invest 10000 rupees" → amount should be "10000"
        
@@ -369,4 +369,4 @@ def health_check():
     return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)))
