@@ -46,8 +46,8 @@ class FDSession:
     conversation_history: str
     fd_info: Dict[str, Any]
     account_type: Optional[str] = None  # "FD" or "RD"
-    created_at: datetime
-    last_updated: datetime
+    created_at: datetime = datetime.utcnow()  # Provide a default value
+    last_updated: datetime = datetime.utcnow()   # Provide a default value
 
 def get_gemini_model():
     return genai.GenerativeModel(
@@ -210,9 +210,7 @@ You can provide these details all at once or one by one. How would you like to p
                 "nominee_name": None,
                 "nominee_relation": None
             },
-            account_type=account_type,
-            created_at=datetime.utcnow(),
-            last_updated=datetime.utcnow()
+            account_type=account_type
         )
 
         session['fd'] = {
