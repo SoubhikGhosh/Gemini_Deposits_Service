@@ -250,7 +250,7 @@ def format_confirmation(deposit_info):
     
     return confirmation
 
-@app.route('/api/deposit/start', methods=['POST'])
+@app.route('/api/start', methods=['POST'])
 def start_deposit():
     try:
         session_id, welcome_message = create_new_session()
@@ -265,7 +265,7 @@ def start_deposit():
         app.logger.error(f"Error starting deposit session: {str(e)}")
         return jsonify({'error': 'Internal server error', 'proceed_to_pay': False}), 500
 
-@app.route('/api/deposit/process', methods=['POST'])
+@app.route('/api/process', methods=['POST'])
 def process_deposit():
     try:
         data = request.get_json()
@@ -394,7 +394,7 @@ def process_deposit():
         app.logger.error(f"Error processing deposit message: {str(e)}")
         return jsonify({'error': 'Internal server error', 'proceed_to_pay': False}), 500
 
-@app.route('/api/deposit/validate', methods=['POST'])
+@app.route('/api/validate', methods=['POST'])
 def validate_deposit():
     try:
         data = request.get_json()
@@ -423,7 +423,7 @@ def validate_deposit():
         app.logger.error(f"Error validating deposit: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@app.route('/api/deposit/complete', methods=['POST'])
+@app.route('/api/complete', methods=['POST'])
 def complete_deposit():
     try:
         data = request.get_json()
@@ -502,7 +502,7 @@ def complete_deposit():
             'status': 'FAILED'
         }), 500
 
-@app.route('/api/deposit/rates', methods=['GET'])
+@app.route('/api/rates', methods=['GET'])
 def get_deposit_rates():
     try:
         # You would typically fetch these from a database or external service
