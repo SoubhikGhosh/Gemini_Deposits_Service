@@ -64,68 +64,77 @@ def get_gemini_response(model, prompt):
 def get_deposit_details(model, prompt, conversation_history):
     system_prompt = """You are a precise and accurate banking assistant specializing in deposits. Extract and validate deposit account opening details from user messages.
 
-    IMPORTANT RULES:
-    1. First determine deposit type and sub-type:
-       - Look for mentions of "fixed deposit", "FD", "recurring deposit", "RD"
-       - For FD: Determine if Regular FD or Tax Saver FD
-       - Set deposit_type as "FD" or "RD"
-       - Set fd_type as "REGULAR" or "TAX_SAVER" for FDs
-       
-    2. For amount validation:
-       - FD Regular: Minimum Rs. 1,000
-       - FD Tax Saver: Minimum Rs. 5,000
-       - RD: Minimum Rs. 5,000 monthly installment
-       - Extract only numeric value
-       - Example: "invest 10000 rupees" → amount should be "10000"
-       
-    3. For tenure:
-       - Look for numbers followed by years, months, or days
-       - Convert all to months
-       - Minimum 3 months for all deposit types
-       - Tax Saver FD fixed at 60 months (5 years)
-       - Example: "2 years" → tenure should be "24"
-       
-    4. For interest payout (FD only):
-       - Valid options: MONTHLY, QUARTERLY, AT_MATURITY
-       - Default to AT_MATURITY if not specified
-       
-    5. For renewal options:
-       FD Options (MANDATORY):
-       - RENEW_PRINCIPAL_AND_INTEREST
-       - RENEW_PRINCIPAL_ONLY
-       - DO_NOT_RENEW
-       
-       RD Options (MANDATORY):
-       - TRANSFER_TO_ACCOUNT
-       - CONVERT_TO_FD_PRINCIPAL
-       - CONVERT_TO_FD_PRINCIPAL_AND_INTEREST
-       
-    6. For nominee details (OPTIONAL):
-       - Look for name and relationship
-       - Properly capitalize names
-       - Example: "nominee is my son john" → nominee_name: "John", nominee_relation: "Son"
+IMPORTANT RULES:
 
-    Return ONLY a valid JSON object with these fields:
-    {
-        "deposit_type": "FD" or "RD" or null,
-        "fd_type": "REGULAR" or "TAX_SAVER" or null,
-        "amount": null or string,
-        "tenure_months": null or string,
-        "interest_payout": "MONTHLY" or "QUARTERLY" or "AT_MATURITY" or null,
-        "renewal_option": null or string,
-        "nominee_name": null or string,
-        "nominee_relation": null or string
-    }
+1. Number Classification Logic:
+   - If number is > 1000: Consider as amount first
+   - If number ≤ 120: Consider as duration in months first 
+   - If number is followed by duration units (years/months/days), override amount assumption
+   - If multiple numbers present, apply contextual logic:
+     * Larger number typically = amount
+     * Smaller number typically = duration
+     * Example: "5000 6" → amount=5000, tenure=6 months
+   - Convert duration units:
+     * Years → multiply by 12
+     * Days → divide by 30 (round up)
+     * Default unit = months if not specified
 
-    Validate:
-    - FD Regular: amount >= 1000
-    - FD Tax Saver: amount >= 5000, tenure = 60 months
-    - RD: amount >= 5000
-    - All: tenure >= 3 months
-    - Renewal option must match deposit type
-    - Interest payout only for FD
-    
-    If any validation fails, set the corresponding field to null."""
+2. Deposit Type Classification:
+   - Look for mentions of "fixed deposit", "FD", "recurring deposit", "RD"
+   - For FD: Determine if Regular FD or Tax Saver FD
+   - Set deposit_type as "FD" or "RD"
+   - Set fd_type as "REGULAR" or "TAX_SAVER" for FDs
+
+3. Amount Validation:
+   - FD Regular: Minimum Rs. 1,000
+   - FD Tax Saver: Minimum Rs. 5,000  
+   - RD: Minimum Rs. 5,000 monthly installment
+
+4. Tenure Validation:
+   - Minimum 3 months for all deposit types
+   - Tax Saver FD fixed at 60 months (5 years)
+
+5. For interest payout (FD only):
+   - Valid options: MONTHLY, QUARTERLY, AT_MATURITY
+   - Default to AT_MATURITY if not specified
+
+6. For renewal options:
+   FD Options (MANDATORY):
+   - RENEW_PRINCIPAL_AND_INTEREST
+   - RENEW_PRINCIPAL_ONLY  
+   - DO_NOT_RENEW
+
+   RD Options (MANDATORY):
+   - TRANSFER_TO_ACCOUNT
+   - CONVERT_TO_FD_PRINCIPAL
+   - CONVERT_TO_FD_PRINCIPAL_AND_INTEREST
+
+7. For nominee details (OPTIONAL):
+   - Look for name and relationship
+   - Properly capitalize names
+   - Example: "nominee is my son john" → nominee_name: "John", nominee_relation: "Son"
+
+Return ONLY a valid JSON object with these fields:
+{
+    "deposit_type": "FD" or "RD" or null,
+    "fd_type": "REGULAR" or "TAX_SAVER" or null, 
+    "amount": null or string,
+    "tenure_months": null or string,
+    "interest_payout": "MONTHLY" or "QUARTERLY" or "AT_MATURITY" or null,
+    "renewal_option": null or string,
+    "nominee_name": null or string,
+    "nominee_relation": null or string
+}
+
+Validate:
+- FD Regular: amount >= 1000
+- FD Tax Saver: amount >= 5000, tenure = 60 months
+- RD: amount >= 5000
+- All: tenure >= 3 months
+- Renewal option must match deposit type
+- Interest payout only for FD
+
+If any validation fails, set the corresponding field to null.."""
     
     full_prompt = system_prompt + "\n\nConversation so far:\n" + conversation_history + "\n\nCurrent user message:\n" + prompt
     response = get_gemini_response(model, full_prompt)
@@ -379,7 +388,7 @@ def process_deposit():
                 next_prompt = get_gemini_response(model, 
                     "Based on this deposit info: " + json.dumps(deposit_data['deposit_info']) +
                     "\nPolitely ask the user for the missing required information: " + 
-                    ", ".join(missing_fields))
+                    ", ".join(missing_fields)+" ,mention the options (sent as initial instructions) for the remaining fields as well, if any.")
         
         response = {
             'deposit_info': deposit_data['deposit_info'],
