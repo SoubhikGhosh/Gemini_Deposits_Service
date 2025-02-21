@@ -323,7 +323,7 @@ def process_deposit():
             
             session.pop('deposit', None)
             return jsonify({
-                'message': 'Deposit account opening initiated!',
+                'next_prompt': 'Deposit account opening initiated!',
                 'deposit_details': deposit_data['deposit_info'],
                 'proceed_to_pay': True
             })
@@ -483,7 +483,7 @@ def complete_deposit():
         
         return jsonify({
             'status': 'COMPLETED',
-            'message': 'Deposit account opening completed successfully',
+            'next_prompt': 'Deposit account opening request generated successfully',
             'reference_number': str(uuid.uuid4()),  # Generate unique reference number
             'completion_details': {
                 'deposit_type': deposit_info['deposit_type'],
@@ -536,6 +536,10 @@ def get_deposit_rates():
     except Exception as e:
         app.logger.error(f"Error fetching deposit rates: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()})
 
 if __name__ == '__main__':
     app.run(debug=True)
